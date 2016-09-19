@@ -1,0 +1,26 @@
+{
+  "name": "crop",
+  "version": "0.0.1",
+  "description": "移动web处理图片上传预览裁剪插件",
+  "main": "./dist/crop.js",
+  "scripts": {
+    "dev": "NODE_ENV=development node build/index.js",
+    "release": "NODE_ENV=production node build/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TOP-Chao/crop.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TOP-Chao/crop/issues"
+  },
+  "homepage": "https://github.com/TOP-Chao/crop#readme",
+  "devDependencies": {
+    "babel-preset-es2015-loose-rollup": "^7.0.0",
+    "rollup": "^0.35.10",
+    "rollup-plugin-babel": "^2.6.1",
+    "rollup-plugin-uglify": "^1.0.1"
+  }
+}

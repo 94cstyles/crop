@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta content="text/html;charset=utf-8" http-equiv="content-type">
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no" name="viewport">
+    <meta content="yes" name="apple-touch-fullscreen">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta content="webkit" name="renderer">
+    <title></title>
+    <link rel="stylesheet" href="css/crop.css">
+    <style media="screen">
+        * {
+            margin: 0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        .m-crop-image {
+            position: relative;
+            width: 300px;
+            height: 400px;
+            background-color: #f6f6f6;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .m-crop-image a {
+            outline: none;
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+        }
+
+        .m-crop-image .preview, .m-crop-image .file {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .m-crop-image .preview {
+            z-index: 1;
+        }
+
+        .m-crop-image .file {
+            z-index: 2;
+            cursor: pointer;
+            opacity: 0;
+            -webkit-appearance: none;
+        }
+    </style>
+</head>
+<body>
+<div class="m-crop-image">
+    <img id="js_img" class="preview"
+         src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="/>
+    <input id="js_file" class="file" type="file" accept="image/*">
+</div>
+</body>
+<script src="../dist/crop.js"></script>
+<script>
+    var crop = new Crop(document.getElementById('js_file'), {
+        cropWidth: 300,
+        cropHeight: 400
+    });
+    crop.on('error', function (code, msg) {
+        console.log(arguments);
+    }).on('crop', function (file, fileName) {
+        document.getElementById('js_img').src = file;
+    });
+</script>
+</html>

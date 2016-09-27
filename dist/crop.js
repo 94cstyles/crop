@@ -2,7 +2,7 @@
  * crop.js v0.0.1
  * git+https://github.com/TOP-Chao/crop.git
  * License: MIT
- * Date: 2016-9-19 21:53
+ * Date: 2016-9-26 22:37
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -251,68 +251,74 @@
       animationEvent ? el.addEventListener(animationEvent, bind) : setTimeout(callback, aniTime);
   }
 
-  var SUPPORT_ONLY_TOUCH$1 = 'ontouchstart' in window && /mobile|tablet|ip(ad|hone|od)|android/i.test(navigator.userAgent);
+  var SUPPORT_ONLY_TOUCH = 'ontouchstart' in window && /mobile|tablet|ip(ad|hone|od)|android/i.test(navigator.userAgent);
+
+  var supportOnlyTouch = SUPPORT_ONLY_TOUCH;
 
   var Tap = function () {
-      function Tap(elem, handler) {
+      function Tap(el, handler, options) {
           classCallCheck(this, Tap);
 
-          this.elem = elem;
+          this.opts = Object.assign({
+              time: 250,
+              posThreshold: 10,
+              stop: true,
+              prevent: true
+          }, options);
+
+          this.el = el;
           this.handler = handler;
 
-          if (SUPPORT_ONLY_TOUCH$1) {
+          if (SUPPORT_ONLY_TOUCH) {
+              console.log('tap事件');
               this.events = {
-                  touchStart: this.onTouchStart.bind(this),
-                  touchMove: this.onTouchMove.bind(this),
-                  touchEnd: this.onTouchEnd.bind(this),
-                  click: function (e) {
-                      e.stopPropagation();
-                  }
+                  start: this.onTouchStart.bind(this),
+                  end: this.onTouchEnd.bind(this)
               };
-              this.cachedX = null;
-              this.cachedY = null;
-              this.currX = null;
-              this.currY = null;
-              this.time = null;
-              elem.addEventListener('touchstart', this.events.touchStart, false);
-              elem.addEventListener('touchmove', this.events.touchMove, false);
-              elem.addEventListener('touchend', this.events.touchEnd, false);
-              elem.addEventListener('click', this.events.click, false);
+              el.addEventListener('touchstart', this.events.start, false);
+              el.addEventListener('touchend', this.events.end, false);
           } else {
-              elem.addEventListener('click', handler, false);
+              el.addEventListener('click', this.handler, false);
           }
       }
 
+      Tap.prototype.destroy = function destroy() {
+          if (SUPPORT_ONLY_TOUCH) {
+              this.el.removeEventListener('touchstart', this.events.start);
+              this.el.removeEventListener('touchend', this.events.end);
+          } else {
+              this.el.removeEventListener('click', this.handler);
+          }
+      };
+
       Tap.prototype.onTouchStart = function onTouchStart(e) {
-          if (e.touches.length > 1) return;
-          this.cachedX = this.currX = e.touches[0].pageX;
-          this.cachedY = this.currY = e.touches[0].pageY;
+          if (this.opts.stop) e.stopPropagation();
+          if (this.opts.prevent) e.preventDefault();
+
+          var touches = e.touches[0];
+          this.pageX = touches.pageX;
+          this.pageY = touches.pageY;
           this.time = Date.now();
       };
 
-      Tap.prototype.onTouchMove = function onTouchMove(e) {
-          if (this.cachedX == null) return;
-          this.currX = e.touches[0].pageX;
-          this.currY = e.touches[0].pageY;
-      };
-
       Tap.prototype.onTouchEnd = function onTouchEnd(e) {
-          if (this.cachedX == null) return;
-          if (this.cachedX >= this.currX - 30 && this.cachedX <= this.currX + 30 && this.cachedY >= this.currY - 30 && this.cachedY <= this.currY + 30 && this.time + 250 - Date.now() >= 0) {
-              e.preventDefault();
-              this.handler();
-          }
-          this.cachedX = null;
-      };
+          //重写currentTarget
+          Object.defineProperties(e, {
+              "currentTarget": {
+                  value: this.el,
+                  writable: true,
+                  enumerable: true,
+                  configurable: true
+              }
+          });
 
-      Tap.prototype.destroy = function destroy() {
-          if (SUPPORT_ONLY_TOUCH$1) {
-              this.elem.removeEventListener('touchstart', this.events.touchStart);
-              this.elem.removeEventListener('touchmove', this.events.touchMove);
-              this.elem.removeEventListener('touchend', this.events.touchEnd);
-              this.elem.removeEventListener('click', this.events.click);
-          } else {
-              this.elem.removeEventListener('click', this.handler);
+          //目标没有被禁用
+          if (!this.el.disabled) {
+              var touches = e.changedTouches[0];
+              if (this.pageX >= touches.pageX - this.opts.posThreshold && this.pageX <= touches.pageX + this.opts.posThreshold && this.pageY >= touches.pageY - this.opts.posThreshold && this.pageY <= touches.pageY + this.opts.posThreshold && this.time + this.opts.time - Date.now() >= 0) {
+                  e.preventDefault();
+                  this.handler(e);
+              }
           }
       };
 
@@ -320,7 +326,6 @@
   }();
 
   var tpl = '<div class="head"><a class="zoom-in">放大</a> <a class="zoom-out">缩小</a> <a class="rotate">旋转</a></div><div class="panel"><canvas></canvas></div><div class="foot"><a class="cancel">取消</a> <a class="done">选取</a></div><div class="loading"><ul class="spinner"><li></li><li></li><li></li><li></li><li></li></ul></div>';
-  var SUPPORT_ONLY_TOUCH = 'ontouchstart' in window && /mobile|tablet|ip(ad|hone|od)|android/i.test(navigator.userAgent);
 
   var CropCanvas = function () {
       function CropCanvas(trigger, options) {
@@ -392,9 +397,9 @@
               this.tapEventCache.done.destroy();
           }
 
-          this.canvas[attr](SUPPORT_ONLY_TOUCH ? 'touchstart' : 'mousedown', this.eventCache.touchStart, false);
-          this.canvas[attr](SUPPORT_ONLY_TOUCH ? 'touchmove' : 'mousemove', this.eventCache.touchMove, false);
-          if (SUPPORT_ONLY_TOUCH) {
+          this.canvas[attr](supportOnlyTouch ? 'touchstart' : 'mousedown', this.eventCache.touchStart, false);
+          this.canvas[attr](supportOnlyTouch ? 'touchmove' : 'mousemove', this.eventCache.touchMove, false);
+          if (supportOnlyTouch) {
               this.canvas[attr]('touchend', this.eventCache.touchEnd, false);
           } else {
               window[attr]('mouseup', this.eventCache.touchEnd, false);

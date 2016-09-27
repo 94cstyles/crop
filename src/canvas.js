@@ -1,8 +1,7 @@
 import animationEnd from './modules/animationEnd';
-import Tap from './modules/tap';
+import Tap, {supportOnlyTouch} from './modules/tap';
 
 const tpl = `<div class="head"><a class="zoom-in">放大</a> <a class="zoom-out">缩小</a> <a class="rotate">旋转</a></div><div class="panel"><canvas></canvas></div><div class="foot"><a class="cancel">取消</a> <a class="done">选取</a></div><div class="loading"><ul class="spinner"><li></li><li></li><li></li><li></li><li></li></ul></div>`;
-const SUPPORT_ONLY_TOUCH = ('ontouchstart' in window) && /mobile|tablet|ip(ad|hone|od)|android/i.test(navigator.userAgent);
 
 export default class CropCanvas {
     constructor(trigger, options) {
@@ -72,9 +71,9 @@ export default class CropCanvas {
             this.tapEventCache.done.destroy();
         }
 
-        this.canvas[attr](SUPPORT_ONLY_TOUCH ? 'touchstart' : 'mousedown', this.eventCache.touchStart, false);
-        this.canvas[attr](SUPPORT_ONLY_TOUCH ? 'touchmove' : 'mousemove', this.eventCache.touchMove, false);
-        if (SUPPORT_ONLY_TOUCH) {
+        this.canvas[attr](supportOnlyTouch ? 'touchstart' : 'mousedown', this.eventCache.touchStart, false);
+        this.canvas[attr](supportOnlyTouch ? 'touchmove' : 'mousemove', this.eventCache.touchMove, false);
+        if (supportOnlyTouch) {
             this.canvas[attr]('touchend', this.eventCache.touchEnd, false);
         } else {
             window[attr]('mouseup', this.eventCache.touchEnd, false);

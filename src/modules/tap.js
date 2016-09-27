@@ -1,69 +1,74 @@
 const SUPPORT_ONLY_TOUCH = ('ontouchstart' in window) && /mobile|tablet|ip(ad|hone|od)|android/i.test(navigator.userAgent);
 
+export var supportOnlyTouch = SUPPORT_ONLY_TOUCH;
+
 export default class Tap {
-    constructor(elem, handler) {
-        this.elem = elem;
+    constructor(el, handler, options) {
+        this.opts = Object.assign({
+            time: 250,
+            posThreshold: 10,
+            stop: true,
+            prevent: true
+        }, options);
+
+        this.el = el;
         this.handler = handler;
 
         if (SUPPORT_ONLY_TOUCH) {
             this.events = {
-                touchStart: this.onTouchStart.bind(this),
-                touchMove: this.onTouchMove.bind(this),
-                touchEnd: this.onTouchEnd.bind(this),
-                click: function (e) {
-                    e.stopPropagation();
-                }
+                start: this.onTouchStart.bind(this),
+                end: this.onTouchEnd.bind(this)
             };
-            this.cachedX = null;
-            this.cachedY = null;
-            this.currX = null;
-            this.currY = null;
-            this.time = null;
-            elem.addEventListener('touchstart', this.events.touchStart, false);
-            elem.addEventListener('touchmove', this.events.touchMove, false);
-            elem.addEventListener('touchend', this.events.touchEnd, false);
-            elem.addEventListener('click', this.events.click, false);
+            el.addEventListener('touchstart', this.events.start, false);
+            el.addEventListener('touchend', this.events.end, false);
         } else {
-            elem.addEventListener('click', handler, false);
+            el.addEventListener('click', this.handler, false);
         }
-    }
-
-    onTouchStart(e) {
-        if (e.touches.length > 1) return;
-        this.cachedX = this.currX = e.touches[0].pageX;
-        this.cachedY = this.currY = e.touches[0].pageY;
-        this.time = Date.now();
-    }
-
-    onTouchMove(e) {
-        if (this.cachedX == null) return;
-        this.currX = e.touches[0].pageX;
-        this.currY = e.touches[0].pageY;
-    }
-
-    onTouchEnd(e) {
-        if (this.cachedX == null) return;
-        if (
-            this.cachedX >= this.currX - 30 &&
-            this.cachedX <= this.currX + 30 &&
-            this.cachedY >= this.currY - 30 &&
-            this.cachedY <= this.currY + 30 &&
-            this.time + 250 - Date.now() >= 0
-        ) {
-            e.preventDefault();
-            this.handler();
-        }
-        this.cachedX = null;
     }
 
     destroy() {
         if (SUPPORT_ONLY_TOUCH) {
-            this.elem.removeEventListener('touchstart', this.events.touchStart);
-            this.elem.removeEventListener('touchmove', this.events.touchMove);
-            this.elem.removeEventListener('touchend', this.events.touchEnd);
-            this.elem.removeEventListener('click', this.events.click);
+            this.el.removeEventListener('touchstart', this.events.start);
+            this.el.removeEventListener('touchend', this.events.end);
         } else {
-            this.elem.removeEventListener('click', this.handler);
+            this.el.removeEventListener('click', this.handler);
+        }
+    }
+
+    onTouchStart(e) {
+        if (this.opts.stop) e.stopPropagation();
+        if (this.opts.prevent) e.preventDefault();
+
+        let touches = e.touches[0];
+        this.pageX = touches.pageX;
+        this.pageY = touches.pageY;
+        this.time = Date.now();
+    }
+
+    onTouchEnd(e) {
+        //重写currentTarget
+        Object.defineProperties(e, {
+            "currentTarget": {
+                value: this.el,
+                writable: true,
+                enumerable: true,
+                configurable: true
+            },
+        });
+
+        //目标没有被禁用
+        if (!this.el.disabled) {
+            let touches = e.changedTouches[0];
+            if (
+                this.pageX >= touches.pageX - this.opts.posThreshold &&
+                this.pageX <= touches.pageX + this.opts.posThreshold &&
+                this.pageY >= touches.pageY - this.opts.posThreshold &&
+                this.pageY <= touches.pageY + this.opts.posThreshold &&
+                this.time + this.opts.time - Date.now() >= 0
+            ) {
+                e.preventDefault();
+                this.handler(e);
+            }
         }
     }
 }

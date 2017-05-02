@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TOP-Chao/crop.git"
+    "url": "git+https://github.com/94cstyles/crop.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/TOP-Chao/crop/issues"
+    "url": "https://github.com/94cstyles/crop/issues"
   },
-  "homepage": "https://github.com/TOP-Chao/crop#readme",
+  "homepage": "https://github.com/94cstyles/crop#readme",
   "devDependencies": {
     "babel-preset-es2015-loose-rollup": "^7.0.0",
     "rollup": "^0.35.10",

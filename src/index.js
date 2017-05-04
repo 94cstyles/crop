@@ -32,6 +32,10 @@ export default class Crop extends Events {
         this.on('_readFile', (file) => {
             this.elem.value = null;
             this.canvas.setImage(file);
+            if (this.first) {
+              this.first = false;
+              this.trigger('init', file);
+            }
         }).on('_rotate', () => {
             this.file.rotate();
         }).on('_crop', (sourceX, sourceY, sourceWidth, sourceHeight, cropWidth, cropHeight) => {
@@ -45,7 +49,9 @@ export default class Crop extends Events {
             if (!this.file.busy) {
                 if (e.target.files) {
                     //有些低端机图片类型为空
-                    if (e.target.files[0].type == '' || /image\/(jpeg|png|gif|bmp|tiff)/.test(e.target.files[0].type)) {
+                    if (e.target.files[0].type === '' || /image\/(jpeg|png|gif|bmp|tiff)/.test(e.target.files[0].type)) {
+                        this.first = true;
+                        this.trigger('change', e.target.files[0]);
                         this.file.writeFile(e.target.files[0]);
                     } else {
                         this.trigger('error', 2, '请上传正确格式的图片, 仅支持[jpeg,png,gif,bmp,tiff)格式的图片!');

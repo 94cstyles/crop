@@ -1,17 +1,17 @@
 {
   "name": "crop",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "移动web处理图片上传预览裁剪插件",
   "main": "./dist/crop.js",
   "scripts": {
     "dev": "NODE_ENV=development node build/index.js",
-    "release": "NODE_ENV=production node build/index.js"
+    "build": "NODE_ENV=production node build/index.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/94cstyles/crop.git"
   },
-  "author": "",
+  "author": "cstyles",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/94cstyles/crop/issues"

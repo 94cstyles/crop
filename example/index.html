@@ -67,7 +67,11 @@
         cropWidth: 300,
         cropHeight: 400
     });
-    crop.on('error', function (code, msg) {
+    crop.on('change', function (file) {
+        console.log('文件发生变化');
+    }).on('init', function (file) {
+        console.log('文件初始化完成')
+    }).on('error', function (code, msg) {
         console.log(arguments);
     }).on('crop', function (file, fileName) {
         document.getElementById('js_img').src = file;

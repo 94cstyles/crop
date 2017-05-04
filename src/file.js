@@ -10,7 +10,7 @@ export default class CropFile {
     writeFile(file) {
         this.file = {}; //图片缓存
         this.fileKey = ''; //图片缓存key: n e s w
-        this.fileName = file.type != '' && file.name.indexOf('.') != -1 ? file.name : file.name + '.jpg'; //文件名
+        this.fileName = file.type !== '' && file.name.indexOf('.') !== -1 ? file.name : file.name + '.jpg'; //文件名
         this.angle = 0; //当前图片旋转角度值
         this.mime = file.type || 'image/jpeg'; //mime类型
         this.busy = true;
